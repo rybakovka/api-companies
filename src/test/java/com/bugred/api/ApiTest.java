@@ -10,11 +10,17 @@ import com.google.gson.Gson;
 import com.mapping.User;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.mapper.ObjectMapperType;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -63,10 +69,8 @@ public class ApiTest {
     @Test(dataProvider = "user", description = "createUser")
     public void createUserTest(User user) {
         step("Отправка запроса", () -> {
-            String request = new Gson().toJson(user);
-            addAttachment("Request", "text/plain", request);
-            String response = given()
-                    .contentType(ContentType.JSON).body(request)
+            given().filter(new AllureRestAssured())
+                    .contentType(ContentType.JSON).body(user)
                 .when()
                     .post("http://users.bugred.ru/tasks/rest/createuser")
                 .then()
@@ -74,10 +78,7 @@ public class ApiTest {
                             "email", equalTo(user.getEmail()),
                             "hobby", equalTo(user.getHobby()),
                             "phone", equalTo(user.getPhone()),
-                            "inn", equalTo(user.getInn()))
-                    .extract()
-                    .asString();
-            addAttachment("Response", "text/plain", response);
+                            "inn", equalTo(user.getInn()));
         });
     }
 }
